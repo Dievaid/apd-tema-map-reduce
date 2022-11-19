@@ -1,25 +1,24 @@
 // lib header include
 #include "../libs/reducer.hpp"
 
-#include "./data_controller.cpp"
 #include "../libs/power.hpp"
+#include "../impl/data_controller.cpp"
 
 #include <fstream>
 #include <iostream>
 #include <cmath>
 
-reducer::Info::Info(int t_id,
-        std::vector<std::set<long long>*>* mapper_result,
-        pthread_barrier_t* barrier)
-        : t_id(t_id), mapper_result(mapper_result), barrier(barrier) { }
+reducer::Info::Info(int t_id, pthread_barrier_t* barrier)
+        : t_id(t_id), barrier(barrier) { }
 
 reducer::Info::~Info() = default;
 
-std::set<long long>& reducer::take_powers_of(int n, std::vector<std::set<long long>*>* mapper_result)
+std::set<long long>& reducer::take_powers_of(int n)
 {
+    const auto& mapper_result = data::controller::get().mapper_results();
     std::set<long long>* powers_set = new std::set<long long>();
 
-    for (auto mapper : *mapper_result)
+    for (auto mapper : mapper_result)
     {
         for (auto el : *mapper)
         {
@@ -52,7 +51,7 @@ void* reducer::executor(void* arg)
 
     int power_to_scan = info->t_id + reducer::MEM_OFFSET;
 
-    auto& power_set = reducer::take_powers_of(power_to_scan, info->mapper_result);
+    auto& power_set = reducer::take_powers_of(power_to_scan);
     reducer::write_to_file(power_to_scan, power_set);
 
     pthread_exit(NULL);
