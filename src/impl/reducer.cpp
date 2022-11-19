@@ -15,6 +15,7 @@ reducer::Info::~Info() = default;
 
 std::set<long long>& reducer::take_powers_of(int n)
 {
+    //? Extracting the results
     const auto& mapper_result = data::controller::get().mapper_results();
     std::set<long long>* powers_set = new std::set<long long>();
 
@@ -22,6 +23,7 @@ std::set<long long>& reducer::take_powers_of(int n)
     {
         for (auto el : *mapper)
         {
+            //* Check if the reducer's id (n) is suitable for this number
             if (power::check_by_exponent(el, n) || el == 1)
             {
                 powers_set->insert(el);
@@ -34,10 +36,12 @@ std::set<long long>& reducer::take_powers_of(int n)
 
 void reducer::write_to_file(int power, const std::set<long long>& numbers)
 {
+    //* Preparing the output file name
     constexpr int MAX_SIZE = 20;
     char* format_output = new char[MAX_SIZE];
     sprintf(format_output, "out%d.txt", power);
 
+    //* Writing into the file the number of unique values
     std::ofstream fout(format_output);
     fout << numbers.size();
     fout.close();
@@ -47,6 +51,7 @@ void reducer::write_to_file(int power, const std::set<long long>& numbers)
 void* reducer::executor(void* arg)
 {
     reducer::Info* info = static_cast<reducer::Info*>(arg);
+    //* Waiting for the mappers to finish before reducing
     pthread_barrier_wait(info->barrier);
 
     int power_to_scan = info->t_id + reducer::MEM_OFFSET;

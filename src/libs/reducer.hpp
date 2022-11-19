@@ -19,7 +19,16 @@ namespace reducer
 
     void* executor(void*);
 
+    /**
+     * @brief take an exponent and extract all the powers of it
+     * 
+     * @return std::set<long long>& all the unique values raised to the passed power as parameter
+     */
     std::set<long long>& take_powers_of(int);
 
+    /**
+     * @brief writes data into the reducer thread's specific file
+     * 
+     */
     void write_to_file(int, const std::set<long long>&);
 } // end of namespace reducer
