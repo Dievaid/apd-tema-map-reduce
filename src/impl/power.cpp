@@ -8,21 +8,6 @@
 
 // https://cstheory.stackexchange.com/questions/2077/how-to-check-if-a-number-is-a-perfect-power-in-polynomial-time
 
-int power::fast_exponentiation(int a, int n)
-{
-    int ans = 1;
-    while (n)
-    {
-        if (n & 1)
-        {
-            ans *= a;
-            a *= a;
-            n >>= 1;
-        }
-    }
-    return ans;
-}
-
 bool power::is_power(long long n)
 {
     if (n == 1)
