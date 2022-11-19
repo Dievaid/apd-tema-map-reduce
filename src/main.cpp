@@ -46,30 +46,41 @@ int main(int argc, char** argv)
         mapper_res[i] = new std::set<long long>();
     }
 
-    for (int i = 0; i < mappers; i++)
+    for (int i = 0; i < mappers + reducers; i++)
     {
-        mapper::Info* info = new mapper::Info(i, &file_queue, &q_mutex, &barrier);
-        int res = pthread_create(&mapper_threads[i], NULL, mapper::executor, (void*)info);
-
-        if (res)
+        if (i < mappers)
         {
-            exit(-1);
+            mapper::Info* info = new mapper::Info(i, &file_queue, &q_mutex, &barrier);
+            int res = pthread_create(&mapper_threads[i], NULL, mapper::executor, (void*)info);
+
+            if (res)
+            {
+                exit(-1);
+            }
+        }
+        else
+        {
+            reducer::Info* info = new reducer::Info(i - mappers, &barrier);
+            int res = pthread_create(&reducer_threads[i - mappers], NULL, reducer::executor, (void*)info);
+
+            if (res)
+            {
+                exit(-1);
+            }
         }
     }
 
-    for (int i = 0; i < reducers; i++)
+    for (int i = 0; i < mappers + reducers; i++)
     {
-        reducer::Info* info = new reducer::Info(i, &mapper_res, &barrier);
-        int res = pthread_create(&reducer_threads[i], NULL, reducer::executor, (void*)info);
-
-        if (res)
+        if (i < mappers)
         {
-            exit(-1);
+            (void) pthread_join(mapper_threads[i], NULL);
+        }
+        else
+        {
+            (void) pthread_join(reducer_threads[i - mappers], NULL);
         }
     }
-
-    for (auto& thr : mapper_threads) { (void) pthread_join(thr, NULL); }
-    for (auto& thr : reducer_threads) { (void) pthread_join(thr, NULL); }
 
     return 0;
 }
