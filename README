@@ -1,0 +1,43 @@
+==== APD, Tema 1 - Map-Reduce ====
+====   Capragiu David, 334CA  ====
+
+
+Flow-ul temei:
+    1. Se parsează prin argumente CLI nr. de mapperi, reduceri și 
+calea fișierului cu fișierele cu numere de procesat
+    2. La procesarea fișierului cu date necesare vom pune într-o coadă
+căile către fișierele ce conțin numere pentru a le pregăti de a fi procesate
+    3. În funcția de executare a thread-urilor de tip mapper, vom pasa datele
+necesare prin intermediul structurii mapper::Info ce va conține un id, coada de fișiere,
+un mutex pentru a nu avea surprize neplăcute la extragerea unui fișier și o barieră
+care ne va ajuta să așteptăm ca toate thread-urile reducer să termine până vor începe reducerele execuția
+
+    obs. în funcția de executare vom extrage câte un element din coadă până se va goli,
+astfel dacă un thread termină de procesat un fișier, poate trece imediat la următorul
+    obs. apelul de wait al barierei se face la final pentru a aștepta să se termine de
+executat operațiile de mapare, în timp ce la reducere se face imediat la apelul funcției,
+pentru aștepta mapperele
+
+    Fiecare rezultat al unui mapper va fi un std::set ce va conține toate puterile
+identificate de un thread și vor fi adăugate într-un vector de astfel de seturi.
+    Am ales structura de date std::set, pentru a evita existența elementelor duplicate
+
+
+    4. După ce obținem toate seturile de numere de la fiecare mapper,
+vom itera prin fiecare element și vom verifica dacă este o putere specifică id-ului
+pe care reducer-ul nostru îl are (p.s. în cod este exprimată ca threadId + 2)
+    Toate aceste numere care satisfac condiția impusă de fiecare reducer vor fi puse
+în alt std::set pentru a evita duplicatele din seturile obținute de la mappere,
+iar știind că std::set ignoră duplicatele, este suficient să scriem în fișierul
+aferent reducer-ului mărimea noului set.
+
+    obs. pentru a verifica dacă un număr este putere, m-am inspirat dintr-o
+întrebare de pe Stack Exchange
+    link: https://cstheory.stackexchange.com/questions/2077/how-to-check-if-a-number-is-a-perfect-power-in-polynomial-time
+
+
+    Pentru a evita overhead-ul mare în structura reducer::Info de pe rezultatul mapperelor,
+am ales să introduc un singleton thread safe, de unde îmi voi procura rezultatul
+dat de mappere. Tot prin acest singleton am acces și la numărul de mappere și reducere
+prin diverse locuri în care am avut nevoie.
+    aka. am fentat variabilele globale
